@@ -3,3 +3,8 @@
 ################################################################################
 
 /.vs
+/FLCD_Lab2/.vs/FLCD_Lab2
+/FLCD_Lab2/FLCD_Lab2/x64/Debug
+/FLCD_Lab2/FLCD_Lab2/FLCD_Lab2_TemporaryKey.pfx
+/FLCD_Lab2/packages/Microsoft.Windows.CppWinRT.2.0.220531.1
+/FLCD_Lab2/x64/Debug
