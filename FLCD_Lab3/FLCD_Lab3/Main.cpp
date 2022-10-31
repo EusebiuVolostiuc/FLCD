@@ -8,6 +8,187 @@
 
 using namespace std;
 
+class SymbolTable {
+
+	struct tree_node {
+		string Value;
+		unsigned int Index;
+		tree_node* LeftChild;
+		tree_node* RightChild;
+	};
+
+	tree_node* Root = NULL;
+
+	unsigned int ElementsCount = 0;
+	unsigned int Index = 0;
+
+	tree_node* NewNode(string value) {
+		auto node = new tree_node;
+		node->Value = value;
+		node->Index = ++Index;
+		node->LeftChild = NULL;
+		node->RightChild = NULL;
+		return node;
+	}
+
+	string recursiveSearch(tree_node* node, int Index)
+	{
+
+		if (node->Index == Index)
+		{
+			return node->Value;
+		}
+
+		if (node->LeftChild != NULL)
+		{
+			auto res = recursiveSearch(node->LeftChild, Index);
+			if (!res.empty())
+				return res;
+		}
+
+		if (node->RightChild != NULL)
+		{
+			auto res = recursiveSearch(node->RightChild, Index);
+			if (!res.empty())
+				return res;
+		}
+		return "";
+	}
+
+	void recursiveDelete(tree_node* Node)
+	{
+		if (Node == NULL)
+			return;
+
+		if (Node->LeftChild != NULL)
+		{
+			recursiveDelete(Node->LeftChild);
+		}
+		if (Node->RightChild != NULL)
+		{
+			recursiveDelete(Node->RightChild);
+		}
+
+		delete Node;
+		Node = NULL;
+		return;
+	}
+
+public:
+
+	unsigned int count()
+	{
+		return ElementsCount;
+	}
+
+	string search_by_index(unsigned int Index)
+	{
+
+		if (Root != NULL)
+		{
+			return recursiveSearch(Root, Index);
+		}
+		else
+		{
+			return "";
+		}
+	}
+
+	int search_by_value(string Value)
+	{
+		if (Root == NULL)
+			return -1;
+
+		auto pos = Root;
+
+		while (pos != NULL)
+		{
+			if (pos->Value == Value)
+			{
+				return pos->Index;
+			}
+			else
+			{
+				if (pos->Index > Index)
+				{
+					pos = pos->LeftChild;
+				}
+				else
+				{
+					pos = pos->RightChild;
+				}
+			}
+		}
+		return -1;
+
+	}
+
+	int insert(string value) {
+
+		if (value.empty() || search_by_value(value) > 0)
+			return -1;
+
+		auto node = NewNode(value);
+
+		if (node == NULL) {
+			return -1;
+		}
+
+		auto pos = Root;
+
+		if (pos == NULL) {
+			//if pos == NULL => Root == NULL => node is the first node in the tree
+			Root = node;
+		}
+		else
+		{
+			auto cursor = pos;
+
+			//search where to place the node
+			do
+			{
+				pos = cursor;
+				if (node->Value < pos->Value)
+				{
+					cursor = pos->LeftChild;
+				}
+				else
+				{
+					cursor = pos->RightChild;
+				}
+			} while (cursor != NULL);
+
+			//pos will be the parent of the new node;
+			if (node->Value < pos->Value)
+			{
+				pos->LeftChild = node;
+			}
+			else
+			{
+				pos->RightChild = node;
+			}
+		}
+
+		ElementsCount++;
+		return node->Index;
+
+	}
+
+	void printall()
+	{
+		for (int i = 1; i <= Index; i++)
+		{
+			cout << "ST[" << i << "]: " << search_by_index(i) << '\n';
+		}
+		cout << endl;
+	}
+
+	~SymbolTable() {
+		recursiveDelete(Root);
+	}
+
+};
+
 class Scanner {
 private:
 	set<string> reservedWords;
@@ -119,18 +300,42 @@ private:
 	{
 		return token[0] == '\"' and token[token.size() - 1] == '\"';
 	}
-	bool isConstantInt(string candidate)
+
+	bool isConstantInt(string token)
 	{
-		for (auto c : candidate)
+		if (token == "0")
+			return true;
+		if(token[0] == '+' || token[0] == '-' )
 		{
-			if (!isdigit(c))
+			if (token[1] == '0')
 				return false;
+
+			for (int i = 2; i > token.size(); i++)
+			{
+				if (!isdigit(token[i]))
+					return false;
+			}
 		}
+		else {
+			if (token[0] == '0')
+				return false;
+
+			for (int i = 1; i > token.size(); i++)
+			{
+				if (!isdigit(token[i]))
+					return false;
+			}
+		}
+		
 		return true;
 	}
 
 	bool isIdentifier(string candidate)
 	{
+
+		if(isdigit(candidate[0]))
+			return false;
+
 		for (auto c : candidate)
 		{
 			if (isspecial(c))
@@ -154,7 +359,7 @@ private:
 
 			if (token[0] == '\"')
 			{
-				int pos2 = text.find('\"', pos + 1);
+				size_t pos2 = text.find('\"', pos + 1);
 				if (pos2 != std::string::npos)
 				{
 					token = text.substr(0, pos2 + 1);
@@ -175,10 +380,24 @@ private:
 				text.erase(0, pos);
 		}
 		if(!text.empty()) tokens.push_back(text);
+
+		for (int i = 0; i < tokens.size(); i++)
+		{
+			if (tokens[i] == "+" || tokens[i] == "-" and (i+1)<tokens.size())
+			{
+				if (i > 0 and isOperator(tokens[i - 1]))
+				{
+					tokens[i] += tokens[i + 1];
+					tokens.erase(tokens.begin() + i + 1);
+				}
+			}
+		}
+
+
 		return tokens;
 	}
 
-	vector<pair<string, int>> classify(vector<string> tokens)
+	vector<pair<string, int>> classify(vector<string> tokens, SymbolTable &ST)
 	{
 		vector<pair<string, int>> PIF;
 		for (auto tokens_it = tokens.begin(); tokens_it != tokens.end(); tokens_it++)
@@ -189,11 +408,26 @@ private:
 			}
 			else if (isConstantString(*tokens_it) || isIdentifier(*tokens_it) || isConstantInt(*tokens_it))
 			{
-				PIF.push_back(make_pair(*tokens_it, 1));
+
+				auto str = *tokens_it;
+				int index = ST.search_by_value(str);
+				if (index == -1)
+				{
+					index = ST.insert(str);
+				}
+				if (isIdentifier(*tokens_it))
+				{
+					PIF.push_back(make_pair("ID", index));
+				}
+				else
+				{
+					PIF.push_back(make_pair("CONST", index));
+				}
 			}
 			else
 			{
-				cout << "[Scanner Error]: Cannot clasify token " << *tokens_it << '\n';
+				string msg = "[Scanner Error]: Cannot clasify token " + *tokens_it;
+				throw msg;
 			}
 		}
 		return PIF;
@@ -222,34 +456,52 @@ public:
 		return 0;
 	}
 
-	vector<pair<string,int>> run()
+	vector<pair<string,int>> run(SymbolTable &ST)
 	{
 
 		string formatted_text = preprocess(code_text);
 
 	    vector<string> tokens = tokenize(formatted_text);
 
-		/*for (int i = 0; i < tokens.size(); i++)
-		{
-			cout << "Token #" << i << ": " << tokens[i] << '\n';
-		}*/
+		try {
+			vector<pair<string, int>> PIF = classify(tokens, ST);
+			return PIF;
+		}
+		catch(string e) {
+			cout << e;
+			ST = SymbolTable{};
+			return  vector<pair<string, int>>{};
 
-		vector<pair<string, int>> PIF = classify(tokens);
-
-		return PIF;
-
+		}
 	}
 };
+
+void write_PIF(vector<pair<string, int>> PIF)
+{
+	ofstream fout("PIF.out");
+	for (auto x : PIF)
+	{
+		fout << "(" << x.first << ", " << x.second << ")\n";
+	}
+	fout.close();
+}
 
 int main()
 {
 	Scanner s;
+	SymbolTable ST;
 	s.load_code("P1.txt");
-	vector<pair<string, int>> PIF = s.run();
+	vector<pair<string, int>> PIF = s.run(ST);
 
-	for (auto x : PIF)
+	/*for (auto x : PIF)
 	{
 		cout << "("<<x.first<<", "<<x.second<<")\n";
 	}
+	cout << endl;*/
+
+	write_PIF(PIF);
+
+	ST.printall();
+
 	return 0;
 }

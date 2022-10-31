@@ -132,11 +132,12 @@
   <ItemGroup>
     <None Include="Delimiters.in" />
     <None Include="Operators.in" />
+    <None Include="PIF.out" />
     <None Include="Reserved_Words.in" />
     <None Include="Special_Chars.in" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h" />
+    <Text Include="P1.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
