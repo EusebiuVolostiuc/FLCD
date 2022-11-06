@@ -1,0 +1,12 @@
+BEGIN
+var a: int, b: int;
+input(a), input(b);
+var tmp: int;
+while(a != 0)
+{
+  tmp = a;
+  a = a % b;
+  b = tmp;
+}
+output(b);
+END

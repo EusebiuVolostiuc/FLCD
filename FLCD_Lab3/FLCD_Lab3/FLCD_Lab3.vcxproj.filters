@@ -35,9 +35,21 @@
     <None Include="PIF.out">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ST.out">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="P1.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="P2.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="P3.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="P1err.txt">
       <Filter>Source Files</Filter>
     </Text>
   </ItemGroup>

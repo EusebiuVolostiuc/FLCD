@@ -135,9 +135,13 @@
     <None Include="PIF.out" />
     <None Include="Reserved_Words.in" />
     <None Include="Special_Chars.in" />
+    <None Include="ST.out" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="P1.txt" />
+    <Text Include="P1err.txt" />
+    <Text Include="P2.txt" />
+    <Text Include="P3.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

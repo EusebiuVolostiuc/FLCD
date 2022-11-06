@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <set>
+#include <map>
 #include <string>
 #include <regex>
 #include <vector>
@@ -109,7 +110,7 @@ public:
 			}
 			else
 			{
-				if (pos->Index > Index)
+				if (pos->Value > Value)
 				{
 					pos = pos->LeftChild;
 				}
@@ -176,12 +177,24 @@ public:
 
 	void printall()
 	{
-		for (int i = 1; i <= Index; i++)
+		for (unsigned int i = 1; i <= Index; i++)
 		{
 			cout << "ST[" << i << "]: " << search_by_index(i) << '\n';
 		}
 		cout << endl;
 	}
+
+	string toString()
+	{
+		string s = "";
+		for (unsigned int i = 1; i <= Index; i++)
+		{
+			s += "ST[" + to_string(i) + "]: " + search_by_index(i) + '\n';
+		}
+		s += '\n';
+		return s;
+	}
+	
 
 	~SymbolTable() {
 		recursiveDelete(Root);
@@ -241,13 +254,18 @@ private:
 
 	string preprocess(string text)
 	{
-
+		string token_delim = " ";
 		for (int i = 0; i < text.size(); i++)
 		{
+			if (text[i] == ' ')
+			{
+				continue;
+			}
+			else
 			if (isdelim(text[i]))
 			{
-				text.insert(i + 1, " ");
-				text.insert(i, " ");
+				text.insert(i + 1,token_delim);
+				text.insert(i, token_delim);
 				i += 2;
 			}
 			else
@@ -257,25 +275,29 @@ private:
 				while (i < text.size() and text[i] != '\"')
 					i++;
 			}
+			if (text[i] == '\'')
+			{
+				i++;
+				while (i < text.size() and text[i] != '\'')
+					i++;
+			}
 			else
 			if (isspecial(text[i]))
 			{
-				text.insert(i, " ");
+				text.insert(i, token_delim);
 
 				int j = i + 1;
-				while (j < text.size() and isspecial(text[j]) and !isdelim(text[j]))
+				while (j < text.size() and text[j]!= ' ' and isspecial(text[j]) and !isdelim(text[j]))
 				{
 					j++;
 				}
 				if (j < text.size())
-					text.insert(j, " ");
+					text.insert(j, token_delim);
 				i = j;
 			}
 		}
-		regex extra_spaces(" {2,}");
-		auto tmp = regex_replace(text, extra_spaces, " ");
-
-
+		regex extra_token_delims(token_delim + "{2,}");
+		auto tmp = regex_replace(text, extra_token_delims, token_delim);
 		return tmp;
 
 	}
@@ -298,50 +320,75 @@ private:
 
 	bool isConstantString(string token)
 	{
+		//a constant string will be delimited by " "
 		return token[0] == '\"' and token[token.size() - 1] == '\"';
 	}
+	int isConstantChar(string token)
+	{
+		//a constant string will be delimited by ' '
+		if (token[0] == '\'' and token[token.size() - 1] == '\'')
+		{
+			if (token.size() == 3)
+				return 1;
+			else 
+			if (token.size() == 4)
+			{
+				if (token[1] == '\\')
+					return 1;
+				else
+					return 2;
+			}
+			else
+				return 2;
+		}
+		return 0;
+	}
 
-	bool isConstantInt(string token)
+	int isConstantInt(string token)
 	{
 		if (token == "0")
-			return true;
+			return 1;
 		if(token[0] == '+' || token[0] == '-' )
 		{
 			if (token[1] == '0')
-				return false;
+				return 2;
 
-			for (int i = 2; i > token.size(); i++)
+			for(int i = 2; i < token.size(); i++)
 			{
 				if (!isdigit(token[i]))
-					return false;
+					return 0;
 			}
+
+			if (token[0] == '+')
+				return 2;
 		}
 		else {
 			if (token[0] == '0')
-				return false;
+				return 0;
 
-			for (int i = 1; i > token.size(); i++)
+			for (int i = 0; i < token.size(); i++)
 			{
 				if (!isdigit(token[i]))
-					return false;
+					return 0;
 			}
 		}
 		
 		return true;
 	}
 
-	bool isIdentifier(string candidate)
+	int isIdentifier(string candidate)
 	{
-
-		if(isdigit(candidate[0]))
-			return false;
 
 		for (auto c : candidate)
 		{
 			if (isspecial(c))
-				return false;
+				return 0;
 		}
-		return true;
+
+		if (isdigit(candidate[0]))
+			return 2;
+
+		return 1;
 	}
 
 
@@ -371,8 +418,24 @@ private:
 					pos = pos2;
 				}
 			}
+			else
+			if (token[0] == '\'')
+			{
+				size_t pos2 = text.find('\'', 1);
+				if (pos2 != std::string::npos)
+				{
+					token = text.substr(0, pos2 + 1);
+					pos = pos2 + 1;
+				}
+				else
+				{
+					token = text.substr(0, pos2);
+					pos = pos2;
+				}
+			}
 
-			tokens.push_back(token);
+			if(!token.empty())
+				tokens.push_back(token);
 
 			if (pos != std::string::npos)
 				text.erase(0, pos + 1);
@@ -406,28 +469,44 @@ private:
 			{
 				PIF.push_back(make_pair(*tokens_it, 0));
 			}
-			else if (isConstantString(*tokens_it) || isIdentifier(*tokens_it) || isConstantInt(*tokens_it))
+			else if (isConstantString(*tokens_it) || isConstantChar(*tokens_it) || isConstantInt(*tokens_it))
 			{
+				if (isConstantChar(*tokens_it) == 2)
+				{
+					throw* tokens_it + " is not a valid char constant";
+				}
 
+				if (isConstantInt(*tokens_it) == 2)
+				{
+					throw* tokens_it + " is not a valid integer";
+				}
+				
 				auto str = *tokens_it;
 				int index = ST.search_by_value(str);
 				if (index == -1)
 				{
 					index = ST.insert(str);
 				}
-				if (isIdentifier(*tokens_it))
+			    PIF.push_back(make_pair("CONST", index));
+			}
+			else if (isIdentifier(*tokens_it))
+			{
+				if (isIdentifier(*tokens_it) == 2)
 				{
-					PIF.push_back(make_pair("ID", index));
+					throw* tokens_it + " is not a valid identifier";
 				}
-				else
+				auto str = *tokens_it;
+				int index = ST.search_by_value(str);
+				if (index == -1)
 				{
-					PIF.push_back(make_pair("CONST", index));
+					index = ST.insert(str);
 				}
+				PIF.push_back(make_pair("ID", index));
+
 			}
 			else
 			{
-				string msg = "[Scanner Error]: Cannot clasify token " + *tokens_it;
-				throw msg;
+				throw "Cannot clasify token " + *tokens_it;
 			}
 		}
 		return PIF;
@@ -442,47 +521,51 @@ public:
 		load_operators();
 	}
 
-	int load_code(const char* filename)
+	vector<pair<string,int>> run(const char* filename, SymbolTable &ST)
 	{
-		string text, line;
 		ifstream f(filename);
-		while (getline(f, line))
+		string code_line;
+		int line_count = 0;
+		vector<pair<string, int>> PIF;
+		while (getline(f, code_line))
 		{
-			text.append(line);
-			text.append(" ");
+			line_count++;
+			string formatted_text = preprocess(code_line);
+
+			vector<string> tokens = tokenize(formatted_text);
+
+			try {
+				vector<pair<string, int>> Line_PIF = classify(tokens, ST);
+				for (auto token : Line_PIF)
+				{
+					PIF.emplace_back(token);
+				}
+			}
+			catch (string e) {
+				cout << "[Scanner Error]: "<< e << " | Line: " << line_count;
+				ST = SymbolTable{};
+				return  vector<pair<string, int>>{};
+
+			}
 		}
-		f.close();
-		this->code_text = text;
-		return 0;
-	}
-
-	vector<pair<string,int>> run(SymbolTable &ST)
-	{
-
-		string formatted_text = preprocess(code_text);
-
-	    vector<string> tokens = tokenize(formatted_text);
-
-		try {
-			vector<pair<string, int>> PIF = classify(tokens, ST);
-			return PIF;
-		}
-		catch(string e) {
-			cout << e;
-			ST = SymbolTable{};
-			return  vector<pair<string, int>>{};
-
-		}
+		return PIF;
 	}
 };
 
-void write_PIF(vector<pair<string, int>> PIF)
+void write_PIF(vector<pair<string, int>> &PIF)
 {
 	ofstream fout("PIF.out");
 	for (auto x : PIF)
 	{
-		fout << "(" << x.first << ", " << x.second << ")\n";
+		fout << "( " << x.first << " , " << x.second << " )\n";
 	}
+	fout.close();
+}
+
+void write_ST(SymbolTable &ST)
+{
+	ofstream fout("ST.out");
+	fout << ST.toString();
 	fout.close();
 }
 
@@ -490,18 +573,12 @@ int main()
 {
 	Scanner s;
 	SymbolTable ST;
-	s.load_code("P1.txt");
-	vector<pair<string, int>> PIF = s.run(ST);
 
-	/*for (auto x : PIF)
-	{
-		cout << "("<<x.first<<", "<<x.second<<")\n";
-	}
-	cout << endl;*/
+	vector<pair<string, int>> PIF = s.run("P1err.txt",ST);
 
 	write_PIF(PIF);
 
-	ST.printall();
+	write_ST(ST);
 
 	return 0;
 }
