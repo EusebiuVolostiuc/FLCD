@@ -363,14 +363,14 @@ private:
 				return 2;
 		}
 		else {
-			if (token[0] == '0')
-				return 0;
-
+			
 			for (int i = 0; i < token.size(); i++)
 			{
 				if (!isdigit(token[i]))
 					return 0;
 			}
+			if (token[0] == '0')
+				return 2;
 		}
 		
 		return true;
@@ -448,7 +448,7 @@ private:
 		{
 			if (tokens[i] == "+" || tokens[i] == "-" and (i+1)<tokens.size())
 			{
-				if (i > 0 and isOperator(tokens[i - 1]))
+				if (i > 0 and (isOperator(tokens[i - 1]) || isSeparator(tokens[i-1])))
 				{
 					tokens[i] += tokens[i + 1];
 					tokens.erase(tokens.begin() + i + 1);
@@ -574,7 +574,7 @@ int main()
 	Scanner s;
 	SymbolTable ST;
 
-	vector<pair<string, int>> PIF = s.run("P1err.txt",ST);
+	vector<pair<string, int>> PIF = s.run("P1.txt",ST);
 
 	write_PIF(PIF);
 
