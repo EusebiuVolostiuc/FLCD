@@ -3,23 +3,23 @@ from sys import displayhook
 
 class FA:
     def __init__(self, Q, E, S, q0, F):
-        self.Q = Q
-        self.E = E
-        self.S = S
-        self.q0 = q0
-        self.F = F
+        self.__Q = Q
+        self.__E = E
+        self.__S = S
+        self.__q0 = q0
+        self.__F = F
 
     def __init__(self, filename):
         with open(filename,"r") as f_in:
             for line in f_in:
                 if("Q" in line):
-                    self.Q = self.parseSet(line)
+                    self.__Q = self.__parseSet(line)
                 elif("E" in line):
-                    self.E = self.parseSet(line)
+                    self.__E = self.__parseSet(line)
                 elif("q0" in line):
-                    self.q0 = line.strip().replace(" ","").split("=")[1]
+                    self.__q0 = line.strip().replace(" ","").split("=")[1]
                 elif("F" in line):
-                    self.F = self.parseSet(line)
+                    self.__F = self.__parseSet(line)
                 elif("S" in line):
                     text = line.strip()
                     try:
@@ -28,11 +28,11 @@ class FA:
                             text = text + l.strip()
                             l = f_in.readline()
                         text = text + l.strip()
-                        self.S = self.parseTransitions(self.parseSet(text))
+                        self.__S = self.__parseTransitions(self.__parseSet(text))
                     except StopIteration:
                         pass  
 
-    def parseSet(self,line):
+    def __parseSet(self,line):
         Set = line.strip().split("=")[1].strip()
         elements = Set[1:-1].strip().split(",")
         result = []
@@ -40,56 +40,56 @@ class FA:
             result.append( elem.strip())
         return result
 
-    def parseTransitions(self,transitionsSet):
+    def __parseTransitions(self,transitionsSet):
         transitions = []
         for transitionText in transitionsSet:
-            transitionText = transitionText.strip();
-            x, tmp= transitionText[1:].split("+")
+            transitionText = transitionText.replace(" ","");
+            x, tmp= transitionText[1:].split(";")
             x = x.strip()
             y,z = tmp.replace(" ","").split(")->")
             transitions.append(((x,y),z))
         return transitions
 
     def verifyDFA(self, text):
-        currentState = self.q0
+        currentState = self.__q0
         for i in text:
             nextState = None
-            for transition in self.S:
+            for transition in self.__S:
                 if transition[0] == (currentState,i):
                    nextState = transition[1]
                    break
             if nextState is None:
-                return 0
+                return False
             else: currentState = nextState
-        if currentState in self.F:
-           return 1
-        else: return 0
+        if currentState in self.__F:
+           return True
+        else: return False
     
     def getStatesString(self):
-        return 'Q = { ' + ', '.join(self.Q) + ' }\n'
+        return 'Q = { ' + ', '.join(self.__Q) + ' }\n'
 
     def getAlphabetString(self):
-        return 'E = { ' + ', '.join(self.E) + ' }\n'
+        return 'E = { ' + ', '.join(self.__E) + ' }\n'
 
     def getTransitionsString(self):
         return 'S = {\n' + ',\n'.join(
-                   [str("\t" + " + ".join(trans[0]) + " -> " + trans[1]) for trans in self.S]
+                   [str("\t" + " + ".join(trans[0]) + " -> " + trans[1]) for trans in self.__S]
                    ) + '\n}\n'
 
     def getInitialStateString(self):
-        return 'q0 = ' + str(self.q0) + '\n'
+        return 'q0 = ' + str(self.__q0) + '\n'
 
     def getFinalStatesString(self):
-        return 'F = { ' + ', '.join(self.F) + ' }\n'
+        return 'F = { ' + ', '.join(self.__F) + ' }\n'
 
     def __str__(self):
-        return 'Q = { ' + ', '.join(self.Q) + ' }\n' \
-               + 'E = { ' + ', '.join(self.E) + ' }\n' \
+        return 'Q = { ' + ', '.join(self.__Q) + ' }\n' \
+               + 'E = { ' + ', '.join(self.__E) + ' }\n' \
                + 'S = {\n' + ',\n'.join(
-                   [str("\t" + " + ".join(trans[0]) + " -> " + trans[1]) for trans in self.S]
+                   [str("\t" + " + ".join(trans[0]) + " -> " + trans[1]) for trans in self.__S]
                    ) + '\n}\n' \
-               + 'q0 = ' + str(self.q0) + '\n' \
-               + 'F = { ' + ', '.join(self.F) + ' }' \
+               + 'q0 = ' + str(self.__q0) + '\n' \
+               + 'F = { ' + ', '.join(self.__F) + ' }' \
 
 
 def display_menu():
