@@ -3,29 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FLCD_Lab4", "FLCD_Lab4.vcxproj", "{2448F35E-0968-4417-8ADD-FA0E4A9F102C}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FLCD_Lab4", "FLCD_Lab4.pyproj", "{8385B5CC-EF63-4108-A5D2-D6B51F232E9F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2448F35E-0968-4417-8ADD-FA0E4A9F102C}.Debug|x64.ActiveCfg = Debug|x64
-		{2448F35E-0968-4417-8ADD-FA0E4A9F102C}.Debug|x64.Build.0 = Debug|x64
-		{2448F35E-0968-4417-8ADD-FA0E4A9F102C}.Debug|x86.ActiveCfg = Debug|Win32
-		{2448F35E-0968-4417-8ADD-FA0E4A9F102C}.Debug|x86.Build.0 = Debug|Win32
-		{2448F35E-0968-4417-8ADD-FA0E4A9F102C}.Release|x64.ActiveCfg = Release|x64
-		{2448F35E-0968-4417-8ADD-FA0E4A9F102C}.Release|x64.Build.0 = Release|x64
-		{2448F35E-0968-4417-8ADD-FA0E4A9F102C}.Release|x86.ActiveCfg = Release|Win32
-		{2448F35E-0968-4417-8ADD-FA0E4A9F102C}.Release|x86.Build.0 = Release|Win32
+		{8385B5CC-EF63-4108-A5D2-D6B51F232E9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8385B5CC-EF63-4108-A5D2-D6B51F232E9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {ECB8B28D-0A55-4481-B9C4-E2180CBDF7F1}
+		SolutionGuid = {9138F25E-3873-4C00-9C1F-FBCAD76E4C46}
 	EndGlobalSection
 EndGlobal
