@@ -1,4 +1,4 @@
-from sys import displayhook
+from pickle import TRUE
 
 
 class FA:
@@ -28,9 +28,9 @@ class FA:
                             text = text + l.strip()
                             l = f_in.readline()
                         text = text + l.strip()
-                        self.__S = self.__parseTransitions(self.__parseSet(text))
+                        self.__S = self.__parseTransitions(self.__parseSet(text))      
                     except StopIteration:
-                        pass  
+                        pass
 
     def __parseSet(self,line):
         Set = line.strip().split("=")[1].strip()
@@ -41,30 +41,27 @@ class FA:
         return result
 
     def __parseTransitions(self,transitionsSet):
-        transitions = []
+        transitions = {}
         for transitionText in transitionsSet:
             transitionText = transitionText.replace(" ","");
             x, tmp= transitionText[1:].split(";")
             x = x.strip()
             y,z = tmp.replace(" ","").split(")->")
-            transitions.append(((x,y),z))
+            if (x,y) in transitions:
+                raise Exception("The FA is not deterministic")
+            transitions[(x,y)]=z
         return transitions
-
+    
     def verifyDFA(self, text):
         currentState = self.__q0
-        for i in text:
-            nextState = None
-            for transition in self.__S:
-                if transition[0] == (currentState,i):
-                   nextState = transition[1]
-                   break
-            if nextState is None:
+        for symbol in text:
+            if (currentState,symbol) not in self.__S:
                 return False
-            else: currentState = nextState
+            currentState = self.__S[(currentState,symbol)]
         if currentState in self.__F:
-           return True
+            return True
         else: return False
-    
+
     def getStatesString(self):
         return 'Q = { ' + ', '.join(self.__Q) + ' }\n'
 
@@ -86,7 +83,7 @@ class FA:
         return 'Q = { ' + ', '.join(self.__Q) + ' }\n' \
                + 'E = { ' + ', '.join(self.__E) + ' }\n' \
                + 'S = {\n' + ',\n'.join(
-                   [str("\t" + " + ".join(trans[0]) + " -> " + trans[1]) for trans in self.__S]
+                   [str("\t" + " ; ".join(trans[0]) + " -> " + trans[1]) for trans in self.__S]
                    ) + '\n}\n' \
                + 'q0 = ' + str(self.__q0) + '\n' \
                + 'F = { ' + ', '.join(self.__F) + ' }' \
